@@ -1,8 +1,23 @@
 <?php
-$host = getenv('DB_HOST') ?: 'localhost';
-$user = getenv('DB_USER') ?: 'root';
-$pass = getenv('DB_PASS') ?: '';
-$db   = getenv('DB_NAME') ?: 'sheger_kurt_db';
+function get_env_val($key, $default = '') {
+    return $_SERVER[$key] ?? $_ENV[$key] ?? getenv($key) ?: $default;
+}
+
+$host = get_env_val('DB_HOST', 'localhost');
+$user = get_env_val('DB_USER', 'root');
+$pass = get_env_val('DB_PASS', '');
+$db   = get_env_val('DB_NAME', 'sheger_kurt_db');
+
+$db_url = get_env_val('DATABASE_URL');
+if ($db_url) {
+    $parts = parse_url($db_url);
+    if ($parts) {
+        $host = $parts['host'] ?? $host;
+        $db   = ltrim($parts['path'] ?? '', '/') ?: $db;
+        $user = $parts['user'] ?? $user;
+        $pass = $parts['pass'] ?? $pass;
+    }
+}
 
 try {
     $pdo = new PDO("mysql:host=$host", $user, $pass);

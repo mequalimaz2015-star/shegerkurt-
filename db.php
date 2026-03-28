@@ -1,13 +1,18 @@
 <?php
+// Function to safely check multiple env sources (Apache $_SERVER, $_ENV, getenv)
+function get_env_val($key, $default = '') {
+    return $_SERVER[$key] ?? $_ENV[$key] ?? getenv($key) ?: $default;
+}
+
 // Database Config with Environment Variable Support (for Render deployment)
-$host = getenv('DB_HOST') ?: 'localhost';
-$db   = getenv('DB_NAME') ?: 'sheger_kurt_db';
-$user = getenv('DB_USER') ?: 'root';
-$pass = getenv('DB_PASS') ?: '';
+$host = get_env_val('DB_HOST', 'localhost');
+$db   = get_env_val('DB_NAME', 'sheger_kurt_db');
+$user = get_env_val('DB_USER', 'root');
+$pass = get_env_val('DB_PASS', '');
 $charset = 'utf8mb4';
 
 // For Render's direct MySQL URL (if provided as a single string)
-$db_url = getenv('DATABASE_URL');
+$db_url = get_env_val('DATABASE_URL');
 if ($db_url) {
     $parts = parse_url($db_url);
     if ($parts) {
