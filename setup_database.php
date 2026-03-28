@@ -251,6 +251,25 @@ try {
             customer_email VARCHAR(100),
             dish_name VARCHAR(100),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )",
+        "CREATE TABLE IF NOT EXISTS restaurant_tables (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            table_name VARCHAR(100),
+            description TEXT,
+            image_url VARCHAR(255),
+            capacity INT DEFAULT 4,
+            status ENUM('Available', 'Reserved', 'Occupied') DEFAULT 'Available',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )",
+        "CREATE TABLE IF NOT EXISTS payment_proofs (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            customer_phone VARCHAR(50),
+            payment_method VARCHAR(50),
+            transaction_ref VARCHAR(100) UNIQUE,
+            proof_image VARCHAR(255),
+            status ENUM('Pending', 'Verified', 'Rejected') DEFAULT 'Pending',
+            verified_by VARCHAR(100),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )"
     ];
 
@@ -264,6 +283,20 @@ try {
     if (!$check->fetch()) {
         $pdo->exec("ALTER TABLE favorites ADD COLUMN menu_item_id INT AFTER id");
         echo "Added menu_item_id to favorites table.<br>";
+    }
+
+    // Seed Restaurant Tables
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM restaurant_tables");
+    $stmt->execute();
+    if ($stmt->fetchColumn() == 0) {
+        $r_tables = [
+            ['Table 1 - Traditional', 'Two set ground, traditional Mesob seating for an authentic experience. Perfect for traditional kurt lovers.', './assets/images/table_1_mesob.png', 4],
+            ['Table 2 - Skyline', 'Night view of the breathtaking city skyline, perfect for romantic dinners and evening drinks.', './assets/images/banner-1.jpg', 2],
+            ['Table 3 - Friendship', 'Spacious social table for friendship, family gatherings, and celebrations. Large and comfortable.', './assets/images/banner-2.jpg', 8]
+        ];
+        $rt_stmt = $pdo->prepare("INSERT INTO restaurant_tables (table_name, description, image_url, capacity) VALUES (?, ?, ?, ?)");
+        foreach ($r_tables as $tb) $rt_stmt->execute($tb);
+        echo "Restaurant tables seeded.<br>";
     }
 
     // Check if menu_items has likes
