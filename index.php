@@ -5,12 +5,19 @@ require_once 'db.php';
 try {
     $company_info = $pdo->query("SELECT * FROM company_info WHERE id = 1")->fetch();
     $menu_items = $pdo->query("SELECT * FROM menu_items")->fetchAll();
+    $promos = $pdo->query("SELECT * FROM promo_items LIMIT 5")->fetchAll();
+    $categories = $pdo->query("SELECT DISTINCT category FROM menu_items")->fetchAll(PDO::FETCH_COLUMN);
+    $blogs = $pdo->query("SELECT * FROM blogs ORDER BY created_date DESC, id DESC LIMIT 3")->fetchAll();
+    $gallery = $pdo->query("SELECT * FROM gallery ORDER BY id DESC LIMIT 10")->fetchAll();
+    $tables_data = $pdo->query("SELECT * FROM restaurant_tables ORDER BY id ASC")->fetchAll();
+    $open_jobs = $pdo->query("SELECT * FROM jobs WHERE status = 'Open' AND closing_date >= NOW() ORDER BY id DESC LIMIT 3")->fetchAll();
 } catch (Exception $e) {
-    $company_info = [];
-    $menu_items = [];
+    // Auto-redirect to setup script if the database is newly connected and tables don't exist yet!
+    header("Location: setup_database.php");
+    exit();
 }
 
-// Fallback defaults
+// Fallback defaults if table is empty
 $company_name = $company_info['company_name'] ?? 'Sheger Kurt';
 $hero_title = $company_info['hero_title'] ?? 'Traditional Ethiopian Kurt & Bar!';
 $hero_subtitle = $company_info['hero_subtitle'] ?? 'Eat Sleep And';
@@ -23,13 +30,6 @@ $about_img = $company_info['about_image_main'] ?? './assets/images/about-banner.
 $delivery_title = $company_info['delivery_title'] ?? 'A Moments Of Delivered On Right Time & Place';
 $delivery_text = $company_info['delivery_text'] ?? 'Experience the joy of authentic Ethiopian flavors delivered right to your doorstep. From our fresh traditional Kurt to our signature bar dishes, we bring the heart of Sheger Kurt straight to you.';
 $delivery_img = $company_info['delivery_image'] ?? './assets/images/delivery-banner-bg.png';
-
-$promos = $pdo->query("SELECT * FROM promo_items LIMIT 5")->fetchAll();
-$categories = $pdo->query("SELECT DISTINCT category FROM menu_items")->fetchAll(PDO::FETCH_COLUMN);
-$blogs = $pdo->query("SELECT * FROM blogs ORDER BY created_date DESC, id DESC LIMIT 3")->fetchAll();
-$gallery = $pdo->query("SELECT * FROM gallery ORDER BY id DESC LIMIT 10")->fetchAll();
-$tables_data = $pdo->query("SELECT * FROM restaurant_tables ORDER BY id ASC")->fetchAll();
-$open_jobs = $pdo->query("SELECT * FROM jobs WHERE status = 'Open' AND closing_date >= NOW() ORDER BY id DESC LIMIT 3")->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
