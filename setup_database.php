@@ -377,6 +377,13 @@ try {
     echo "<h3>Setup complete!</h3><p><a href='admin.php'>Go to Admin Panel</a></p>";
 
 } catch (PDOException $e) {
-    die("Error during setup: " . $e->getMessage());
+    die("<div style='font-family:sans-serif; text-align:center; margin-top:100px;'>
+            <h1 style='color:#ef4444;'>No Database Connected!</h1>
+            <p>Render is trying to setup your database, but it cannot find the MySQL Server.</p>
+            <p><b>Error Details:</b> " . htmlspecialchars($e->getMessage()) . "</p>
+            <p>Because Render does not have a free MySQL database, you MUST create a free online MySQL database at <b>Aiven.io</b> or <b>RemoteMySQL.com</b> and add the credentials to Render's Environment Variables.</p>
+            <br>
+            <a href='setup_database.php' style='padding:12px 24px; background:#ff9d2d; color:#fff; font-weight:bold; text-decoration:none; border-radius:10px;'>Try Again</a>
+          </div>");
 }
 ?>
