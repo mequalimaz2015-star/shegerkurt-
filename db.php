@@ -25,11 +25,19 @@ $options = [
 ];
 
 try {
-     // For MySQL, we need to handle both with and without DB selection
      $pdo = new PDO("mysql:host=$host;charset=$charset", $user, $pass, $options);
      $pdo->exec("CREATE DATABASE IF NOT EXISTS `$db` CHARACTER SET $charset COLLATE utf8mb4_unicode_ci");
      $pdo->exec("USE `$db`");
 } catch (\PDOException $e) {
-     // Fail quietly or log if needed
+     $pdo = null;
+     if (basename($_SERVER['PHP_SELF']) !== 'setup_database.php') {
+         die("<div style='font-family:sans-serif; text-align:center; margin-top:100px;'>
+                <h1 style='color:#ef4444;'>No Database Connected!</h1>
+                <p>Render is trying to load your website, but it cannot find the MySQL Database.</p>
+                <p><b>Did you add your DB_HOST, DB_USER, DB_PASS, and DB_NAME to the Environment Variables on Render?</b></p>
+                <br>
+                <a href='setup_database.php' style='padding:12px 24px; background:#ff9d2d; color:#fff; font-weight:bold; text-decoration:none; border-radius:10px;'>Run Database Setup</a>
+              </div>");
+     }
 }
 ?>
