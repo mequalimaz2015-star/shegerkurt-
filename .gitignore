@@ -2,7 +2,6 @@
 # db.php (Keep it but it should handle ENV)
 
 # Uploads and temporary files
-uploads/
 debug_*.txt
 *.log
 *.zip
