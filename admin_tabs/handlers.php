@@ -813,6 +813,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $delivery_rider = $_POST['delivery_rider_image_url'];
         }
 
+        // Schema Healing: Ensure newly added columns exist before updating
+        $new_cols = [
+            'google_maps_url', 'google_rating', 'google_rating_count',
+            'tiktok', 'linkedin', 'telegram', 'whatsapp', 'facebook', 'instagram', 'twitter',
+            'ceo_name', 'ceo_title', 'ceo_message', 'ceo_image',
+            'hero_video', 'hero_audio',
+            'hero2_title', 'hero2_subtitle', 'hero2_button_text', 'hero2_image',
+            'hero3_title', 'hero3_subtitle', 'hero3_button_text', 'hero3_image',
+            'history_title', 'history_text1', 'history_text2',
+            'dev_whatsapp', 'dev_telegram', 'dev_linkedin',
+            'bank_name', 'account_name', 'account_number', 'qr_code_image',
+            'footer_text', 'opening_hours_1', 'opening_hours_2', 'opening_hours_3',
+            'footer_bg_image', 'delivery_rider_image', 'delivery_title', 'delivery_text', 'delivery_image'
+        ];
+        foreach ($new_cols as $c) {
+            try { $pdo->exec("ALTER TABLE company_info ADD COLUMN `$c` TEXT"); } catch (Exception $e) {}
+        }
+
         $stmt = $pdo->prepare("UPDATE company_info SET 
             company_name=?, email=?, phone=?, address=?, 
             google_maps_url=?, google_rating=?, google_rating_count=?,
