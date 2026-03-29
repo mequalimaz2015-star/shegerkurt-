@@ -14,6 +14,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $guests = (int)filter_var($persons, FILTER_SANITIZE_NUMBER_INT) ?: 1;
 
     try {
+        // Prevent booking in the past
+        $today = date('Y-m-d');
+        if ($date < $today) {
+            echo "<script>alert('Please select a forward date. You cannot book a table for a past date.'); window.history.back();</script>";
+            exit;
+        }
+
         if ($table_id) {
             // Check for overlapping reservations for the same table on the same date
             // We consider a table reserved if another booking exists within 2 hours
