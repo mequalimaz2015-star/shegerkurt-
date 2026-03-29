@@ -36,7 +36,7 @@ try {
     $tablesToDrop = [
         'users', 'activity_logs', 'recycle_bin', 'menu_items', 'reservations', 
         'employees', 'attendance', 'salary_advances', 'payroll', 'jobs', 
-        'company_info', 'orders', 'favorites'
+        'company_info', 'orders', 'favorites', 'chat_messages', 'chat_sessions'
     ];
     foreach ($tablesToDrop as $table) {
         $pdo->exec("DROP TABLE IF EXISTS $table");
@@ -270,6 +270,23 @@ try {
             status ENUM('Pending', 'Verified', 'Rejected') DEFAULT 'Pending',
             verified_by VARCHAR(100),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )",
+        "CREATE TABLE IF NOT EXISTS chat_sessions (
+            session_id VARCHAR(50) PRIMARY KEY,
+            customer_name VARCHAR(100),
+            customer_email VARCHAR(100),
+            customer_phone VARCHAR(50),
+            department VARCHAR(50) DEFAULT 'Restaurant',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )",
+        "CREATE TABLE IF NOT EXISTS chat_messages (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            session_id VARCHAR(50),
+            sender ENUM('User', 'Admin') DEFAULT 'User',
+            message TEXT,
+            is_read TINYINT(1) DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (session_id) REFERENCES chat_sessions(session_id) ON DELETE CASCADE
         )"
     ];
 

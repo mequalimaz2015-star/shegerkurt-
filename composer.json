@@ -1,5 +1,5 @@
 {
-    "name": "muluken/sheger-kurt",
+    "name": "sheger-kurt/website",
     "description": "Sheger Kurt Bar & Restaurant Management System",
     "require": {
         "php": "^8.0"

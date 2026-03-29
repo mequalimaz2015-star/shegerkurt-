@@ -2,6 +2,31 @@
 require_once 'db.php';
 header('Content-Type: application/json');
 
+// Ensure tables exist before inserting/querying
+try {
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS chat_sessions (
+            session_id VARCHAR(50) PRIMARY KEY,
+            customer_name VARCHAR(100),
+            customer_email VARCHAR(100),
+            customer_phone VARCHAR(50),
+            department VARCHAR(50) DEFAULT 'Restaurant',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    ");
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS chat_messages (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            session_id VARCHAR(50),
+            sender ENUM('User', 'Admin') DEFAULT 'User',
+            message TEXT,
+            is_read TINYINT(1) DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (session_id) REFERENCES chat_sessions(session_id) ON DELETE CASCADE
+        );
+    ");
+} catch (PDOException $e) { }
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Send message
     $sid = $_POST['session_id'] ?? '';

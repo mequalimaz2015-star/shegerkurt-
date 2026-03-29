@@ -2,6 +2,33 @@
 $dept_filter = $_GET['dept'] ?? 'All';
 $dept_query = ($dept_filter !== 'All') ? "WHERE s.department = :dept" : "";
 
+// Ensure tables exist before querying (prevents the 1146 Table doesn't exist error)
+try {
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS chat_sessions (
+            session_id VARCHAR(50) PRIMARY KEY,
+            customer_name VARCHAR(100),
+            customer_email VARCHAR(100),
+            customer_phone VARCHAR(50),
+            department VARCHAR(50) DEFAULT 'Restaurant',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    ");
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS chat_messages (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            session_id VARCHAR(50),
+            sender ENUM('User', 'Admin') DEFAULT 'User',
+            message TEXT,
+            is_read TINYINT(1) DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (session_id) REFERENCES chat_sessions(session_id) ON DELETE CASCADE
+        );
+    ");
+} catch (PDOException $e) {
+    // Ignore error if permissions restrict creation, query below will still be attempted
+}
+
 $q = "SELECT m.session_id, MAX(m.id) as max_id, MAX(m.created_at) as last_msg, s.customer_name, s.customer_phone, s.department,
       SUM(CASE WHEN m.sender = 'User' AND m.is_read = 0 THEN 1 ELSE 0 END) as unread_count
       FROM chat_messages m
