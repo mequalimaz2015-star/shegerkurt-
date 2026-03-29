@@ -20,11 +20,20 @@ try {
             session_id VARCHAR(50),
             sender ENUM('User', 'Admin') DEFAULT 'User',
             message TEXT,
+            image_path VARCHAR(255) DEFAULT NULL,
+            location_lat VARCHAR(50) DEFAULT NULL,
+            location_lng VARCHAR(50) DEFAULT NULL,
             is_read TINYINT(1) DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (session_id) REFERENCES chat_sessions(session_id) ON DELETE CASCADE
         );
     ");
+    // Safely add missing columns to any existing table
+    try {
+        $pdo->exec("ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS image_path VARCHAR(255) DEFAULT NULL");
+        $pdo->exec("ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS location_lat VARCHAR(50) DEFAULT NULL");
+        $pdo->exec("ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS location_lng VARCHAR(50) DEFAULT NULL");
+    } catch (PDOException $e2) { }
 } catch (PDOException $e) { }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

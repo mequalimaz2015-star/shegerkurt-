@@ -284,6 +284,9 @@ try {
             session_id VARCHAR(50),
             sender ENUM('User', 'Admin') DEFAULT 'User',
             message TEXT,
+            image_path VARCHAR(255) DEFAULT NULL,
+            location_lat VARCHAR(50) DEFAULT NULL,
+            location_lng VARCHAR(50) DEFAULT NULL,
             is_read TINYINT(1) DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (session_id) REFERENCES chat_sessions(session_id) ON DELETE CASCADE
@@ -300,6 +303,16 @@ try {
     if (!$check->fetch()) {
         $pdo->exec("ALTER TABLE favorites ADD COLUMN menu_item_id INT AFTER id");
         echo "Added menu_item_id to favorites table.<br>";
+    }
+
+    // Ensure chat_messages has all required columns
+    try {
+        $pdo->exec("ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS image_path VARCHAR(255) DEFAULT NULL");
+        $pdo->exec("ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS location_lat VARCHAR(50) DEFAULT NULL");
+        $pdo->exec("ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS location_lng VARCHAR(50) DEFAULT NULL");
+        echo "Chat table columns verified.<br>";
+    } catch (PDOException $e) {
+        echo "Chat column check: " . htmlspecialchars($e->getMessage()) . "<br>";
     }
 
     // Seed Restaurant Tables
