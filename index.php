@@ -1140,11 +1140,27 @@ $delivery_img = $company_info['delivery_image'] ?? './assets/images/delivery-ban
       <div style="display: flex; gap: 40px; align-items: stretch; flex-wrap: wrap;">
         <!-- Left: Map -->
         <div style="flex: 2; min-width: 300px; min-height: 450px; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border: 8px solid #fff;">
-          <?php if(!empty($company_info['google_maps_url'])): ?>
-            <iframe src="<?= htmlspecialchars($company_info['google_maps_url']) ?>" width="100%" height="100%" style="border:0; min-height: 450px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-          <?php else: ?>
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15762.64555811!2d38.7490!3d9.0350!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x164b85cef5ab402d%3A0x8467b6b037a24d40!2sAddis%20Ababa!5e0!3m2!1sen!2set!4v1711538000000!5m2!1sen!2set" width="100%" height="100%" style="border:0; min-height: 450px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-          <?php endif; ?>
+          <?php 
+          $map_url = trim($company_info['google_maps_url'] ?? '');
+          if (!empty($map_url)) {
+              // If the user copy-pasted the entire <iframe src="..."> code from Google Maps
+              if (preg_match('/src=["\']([^"\']+)["\']/', $map_url, $matches)) {
+                  $map_url = $matches[1];
+              }
+              // If the user pasted a standard interactive Maps URL rather than an embed URL
+              elseif (strpos($map_url, 'google.com/maps') !== false && strpos($map_url, 'embed') === false) {
+                  $map_url = "https://maps.google.com/maps?q=" . urlencode($company_info['address'] ?? 'Ethiopia') . "&t=&z=13&ie=UTF8&iwloc=&output=embed";
+              }
+              // If the user just typed some random text
+              elseif (strpos($map_url, 'http') === false) {
+                  $map_url = "https://maps.google.com/maps?q=" . urlencode($map_url) . "&t=&z=13&ie=UTF8&iwloc=&output=embed";
+              }
+          } else {
+              // Default Sheger Kurt map
+              $map_url = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15762.64555811!2d38.7490!3d9.0350!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x164b85cef5ab402d%3A0x8467b6b037a24d40!2sAddis%20Ababa!5e0!3m2!1sen!2set!4v1711538000000!5m2!1sen!2set";
+          }
+          ?>
+          <iframe src="<?= htmlspecialchars($map_url) ?>" width="100%" height="100%" style="border:0; min-height: 450px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
 
         <!-- Right: Ratings & Info -->
