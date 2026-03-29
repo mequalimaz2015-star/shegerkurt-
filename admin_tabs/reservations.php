@@ -10,6 +10,7 @@
             <th>Actions</th>
         </tr>
         <?php
+        try { $pdo->exec("ALTER TABLE reservations ADD COLUMN table_id INT DEFAULT NULL"); } catch (Exception $e) {}
         $res = $pdo->query("SELECT r.*, t.table_name FROM reservations r LEFT JOIN restaurant_tables t ON r.table_id = t.id ORDER BY r.reservation_date DESC, r.reservation_time DESC")->fetchAll();
         foreach ($res as $r):
             ?>

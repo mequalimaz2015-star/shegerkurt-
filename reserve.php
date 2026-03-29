@@ -14,7 +14,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $guests = (int)filter_var($persons, FILTER_SANITIZE_NUMBER_INT) ?: 1;
 
     try {
+        // Schema Healing: Ensure table_id column exists
+        try {
+            $pdo->exec("ALTER TABLE reservations ADD COLUMN IF NOT EXISTS table_id INT DEFAULT NULL");
+        } catch (PDOException $e) {
+            // Older MySQL fallback
+            try { $pdo->exec("ALTER TABLE reservations ADD COLUMN table_id INT DEFAULT NULL"); } catch (PDOException $e2) {}
+        }
+
         // Prevent booking in the past
+
         $today = date('Y-m-d');
         if ($date < $today) {
             echo "<script>alert('Please select a forward date. You cannot book a table for a past date.'); window.history.back();</script>";
