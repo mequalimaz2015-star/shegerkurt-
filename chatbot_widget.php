@@ -326,9 +326,56 @@ document.addEventListener('DOMContentLoaded', function() {
     if (sessionId) {
         identityForm.style.display = 'none';
         chatInterface.style.display = 'flex';
-        pollMessages();
+        loadHistory();
         setInterval(pollMessages, 3000);
     }
+
+    // Load full conversation history on session restore
+    function loadHistory() {
+        if (!sessionId) return;
+        fetch(`chat_handler.php?session_id=${sessionId}&last_id=0`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) return;
+                // Clear the default welcome bubble
+                chatMsgs.innerHTML = '<div class="msg-bubble system">Welcome! How can we help you today?</div>';
+                (data.messages || []).forEach(m => {
+                    appendMessage(m.sender === 'Admin' ? 'admin' : 'user', m.message, m.id);
+                    if (m.id > lastMsgId) lastMsgId = m.id;
+                });
+                chatMsgs.scrollTop = chatMsgs.scrollHeight;
+            }).catch(() => {});
+    }
+
+    function pollMessages() {
+        if (!sessionId) return;
+        fetch(`chat_handler.php?session_id=${sessionId}&last_id=${lastMsgId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success || !data.messages || data.messages.length === 0) return;
+                let playSound = false;
+                data.messages.forEach(m => {
+                    if (m.id > lastMsgId) {
+                        lastMsgId = m.id;
+                        if (m.sender === 'Admin') {
+                            appendMessage('admin', m.message, m.id);
+                            playSound = true;
+                            if (!isChatOpen) {
+                                unreadCount++;
+                                unreadBadge.style.display = 'block';
+                                unreadBadge.innerText = unreadCount;
+                                showCustomerToast(m.message);
+                            }
+                        }
+                    }
+                });
+                if (playSound) {
+                    chatMsgs.scrollTop = chatMsgs.scrollHeight;
+                    msgSound.play().catch(() => {});
+                }
+            }).catch(() => {});
+    }
+
 
     startBtn.addEventListener('click', () => {
         const name = document.getElementById('chatName').value.trim();
@@ -351,10 +398,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     localStorage.setItem('bloom_chat_name', name);
                     identityForm.style.display = 'none';
                     chatInterface.style.display = 'flex';
-                    pollMessages();
+                    chatMsgs.innerHTML = '<div class="msg-bubble system">Welcome! How can we help you today?</div>';
                     setInterval(pollMessages, 3000);
                 }
-            });
+            }).catch(() => {});
     });
 
     chatForm.addEventListener('submit', (e) => {
@@ -369,38 +416,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         appendMessage('user', msg);
         chatInput.value = '';
-        fetch('chat_handler.php', { method: 'POST', body: formData });
+        chatMsgs.scrollTop = chatMsgs.scrollHeight;
+        fetch('chat_handler.php', { method: 'POST', body: formData }).catch(() => {});
     });
 
-    function pollMessages() {
-        if (!sessionId) return;
-        fetch(`chat_handler.php?session_id=${sessionId}&last_id=${lastMsgId}`)
-            .then(r => r.json())
-            .then(data => {
-                if (data.success && data.messages.length > 0) {
-                    let playSound = false;
-                    data.messages.forEach(m => {
-                        if (m.id > lastMsgId) {
-                            if (m.sender === 'Admin') {
-                                appendMessage('admin', m.message);
-                                playSound = true;
-                                if (!isChatOpen) {
-                                    unreadCount++;
-                                    unreadBadge.style.display = 'block';
-                                    unreadBadge.innerText = unreadCount;
-                                    showCustomerToast(m.message); 
-                                }
-                            }
-                            lastMsgId = m.id;
-                        }
-                    });
-                    if (playSound) msgSound.play().catch(()=>{});
-                }
-            });
-    }
-
-    function appendMessage(sender, text) {
+    function appendMessage(sender, text, msgId = null) {
+        // Prevent duplicate rendering using data-msgid
+        if (msgId && chatMsgs.querySelector(`[data-msgid="${msgId}"]`)) return;
         const div = document.createElement('div');
+        if (msgId) div.dataset.msgid = msgId;
         if (text.startsWith('ITEM_ORDER:')) {
             try {
                 const item = JSON.parse(text.replace('ITEM_ORDER:', ''));
