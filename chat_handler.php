@@ -32,13 +32,11 @@ try {
         );
     ");
     // Safely add missing columns to any existing table
-    try {
-        $pdo->exec("ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS image_path VARCHAR(255) DEFAULT NULL");
-        $pdo->exec("ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS location_lat VARCHAR(50) DEFAULT NULL");
-        $pdo->exec("ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS location_lng VARCHAR(50) DEFAULT NULL");
-    } catch (PDOException $e2) { }
+    $new_chat_cols = ['image_path' => 'VARCHAR(255)', 'location_lat' => 'VARCHAR(50)', 'location_lng' => 'VARCHAR(50)'];
+    foreach ($new_chat_cols as $c => $type) {
+        try { $pdo->exec("ALTER TABLE chat_messages ADD COLUMN `$c` $type DEFAULT NULL"); } catch (PDOException $e) { }
+    }
 } catch (PDOException $e) { }
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Send message
     $sid = $_POST['session_id'] ?? '';

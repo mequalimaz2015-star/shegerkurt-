@@ -28,14 +28,13 @@ try {
             FOREIGN KEY (session_id) REFERENCES chat_sessions(session_id) ON DELETE CASCADE
         );
     ");
-    // Add missing columns to existing tables if they don't have them
-    try {
-        $pdo->exec("ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS image_path VARCHAR(255) DEFAULT NULL");
-        $pdo->exec("ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS location_lat VARCHAR(50) DEFAULT NULL");
-        $pdo->exec("ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS location_lng VARCHAR(50) DEFAULT NULL");
-    } catch (PDOException $e2) { /* ignore if already exist */ }
+    // Add missing columns to existing tables safely
+    $new_chat_cols = ['image_path' => 'VARCHAR(255)', 'location_lat' => 'VARCHAR(50)', 'location_lng' => 'VARCHAR(50)'];
+    foreach ($new_chat_cols as $c => $type) {
+        try { $pdo->exec("ALTER TABLE chat_messages ADD COLUMN `$c` $type DEFAULT NULL"); } catch (PDOException $e) { }
+    }
 } catch (PDOException $e) {
-    // Ignore error if permissions restrict creation, query below will still be attempted
+    // Ignore error if permissions restrict creation
 }
 
 $q = "SELECT m.session_id, MAX(m.id) as max_id, MAX(m.created_at) as last_msg, s.customer_name, s.customer_phone, s.department,
