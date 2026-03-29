@@ -8,6 +8,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
+    // Schema Healing for Production DB
+    try { $pdo->exec("ALTER TABLE users ADD COLUMN status ENUM('Pending', 'Active', 'Disabled') DEFAULT 'Active'"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE users ADD COLUMN role ENUM('Admin', 'Manager', 'Supervisor', 'Waiter') DEFAULT 'Admin'"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE users ADD COLUMN permissions TEXT DEFAULT NULL"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE users ADD COLUMN phone VARCHAR(20) DEFAULT NULL"); } catch (Exception $e) {}
+    try { $pdo->exec("ALTER TABLE users ADD COLUMN profile_pic VARCHAR(255) DEFAULT NULL"); } catch (Exception $e) {}
+
     $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch();

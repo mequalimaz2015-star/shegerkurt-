@@ -19,6 +19,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($stmt->fetchColumn() > 0) {
             $error = "Email already registered!";
         } else {
+            // Schema Healing for Production DB
+            try { $pdo->exec("ALTER TABLE users ADD COLUMN status ENUM('Pending', 'Active', 'Disabled') DEFAULT 'Active'"); } catch (Exception $e) {}
+            try { $pdo->exec("ALTER TABLE users ADD COLUMN role ENUM('Admin', 'Manager', 'Supervisor', 'Waiter') DEFAULT 'Admin'"); } catch (Exception $e) {}
+            try { $pdo->exec("ALTER TABLE users ADD COLUMN permissions TEXT DEFAULT NULL"); } catch (Exception $e) {}
+            try { $pdo->exec("ALTER TABLE users ADD COLUMN phone VARCHAR(20) DEFAULT NULL"); } catch (Exception $e) {}
+            try { $pdo->exec("ALTER TABLE users ADD COLUMN profile_pic VARCHAR(255) DEFAULT NULL"); } catch (Exception $e) {}
+
             $hashed = password_hash($password, PASSWORD_DEFAULT);
             $stmt = $pdo->prepare("INSERT INTO users (full_name, email, password, status, role) VALUES (?, ?, ?, 'Pending', 'Admin')");
             if ($stmt->execute([$full_name, $email, $hashed])) {
