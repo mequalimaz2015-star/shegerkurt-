@@ -57,6 +57,17 @@ $permission_groups = [
 
 <!-- Requests Center -->
 <?php 
+try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS password_resets (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT,
+        email VARCHAR(100),
+        reset_token VARCHAR(64),
+        status ENUM('Pending', 'Completed') DEFAULT 'Pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
+} catch (PDOException $e) {}
+
 $pending_resets = $pdo->query("SELECT * FROM password_resets WHERE status = 'Pending'")->fetchAll();
 $pending_signups = array_filter($users, fn($u) => $u['status'] === 'Pending');
 ?>
