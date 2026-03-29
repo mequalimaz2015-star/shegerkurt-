@@ -333,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load full conversation history on session restore
     function loadHistory() {
         if (!sessionId) return;
-        fetch(`chat_handler.php?session_id=${sessionId}&last_id=0`)
+        fetch(`chat_handler.php?session_id=${sessionId}&last_id=0&_t=${Date.now()}`)
             .then(r => r.json())
             .then(data => {
                 if (!data.success) return;
@@ -349,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function pollMessages() {
         if (!sessionId) return;
-        fetch(`chat_handler.php?session_id=${sessionId}&last_id=${lastMsgId}`)
+        fetch(`chat_handler.php?session_id=${sessionId}&last_id=${lastMsgId}&_t=${Date.now()}`)
             .then(r => r.json())
             .then(data => {
                 if (!data.success || !data.messages || data.messages.length === 0) return;

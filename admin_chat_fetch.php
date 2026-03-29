@@ -1,7 +1,9 @@
 <?php
 require_once 'db.php';
 header('Content-Type: application/json');
-
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
 $sid = $_GET['sid'] ?? '';
 $last_id = (int)($_GET['last_id'] ?? 0);
 $dept = $_GET['dept'] ?? 'All';

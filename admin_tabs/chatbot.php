@@ -348,7 +348,7 @@ function renderMessageHTML(sender, text) {
 }
 
 function pollChat() {
-    fetch(`admin_chat_fetch.php?sid=${activeSid}&last_id=${lastId}&dept=${deptFilter}`)
+    fetch(`admin_chat_fetch.php?sid=${activeSid}&last_id=${lastId}&dept=${deptFilter}&_t=${Date.now()}`)
         .then(r=>r.json()).then(data=>{
         if(!data.success) return;
 
