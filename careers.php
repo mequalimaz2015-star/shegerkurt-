@@ -2,6 +2,34 @@
 session_start();
 require_once 'db.php';
 
+// Auto-create job tables if missing (Render fresh deployment safety)
+try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS job_questions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        job_id INT NOT NULL,
+        question TEXT NOT NULL,
+        option_a VARCHAR(255) NOT NULL,
+        option_b VARCHAR(255) NOT NULL,
+        option_c VARCHAR(255) NOT NULL,
+        option_d VARCHAR(255) NOT NULL,
+        correct_answer CHAR(1) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
+    $pdo->exec("CREATE TABLE IF NOT EXISTS job_applications (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        job_id INT NOT NULL,
+        applicant_name VARCHAR(100) NOT NULL,
+        email VARCHAR(100),
+        phone VARCHAR(50),
+        gpa DECIMAL(4,2) DEFAULT 0,
+        photo_url VARCHAR(255),
+        resume_url VARCHAR(255),
+        exam_score DECIMAL(5,2) DEFAULT NULL,
+        status ENUM('Pending','Reviewed','Accepted','Rejected') DEFAULT 'Pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )");
+} catch (PDOException $e) { /* ignore */ }
+
 // Fetch global company info
 $c_stmt = $pdo->query("SELECT * FROM company_info LIMIT 1");
 $c = $c_stmt->fetch(PDO::FETCH_ASSOC);
